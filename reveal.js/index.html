@@ -1,0 +1,308 @@
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/nodejs.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <style type="text/css">
+            .left { text-align: left; }
+			.backgrounds {
+				-webkit-filter: blur(5px) brightness(50%);
+				-moz-filter: blur(50px) brightness(50%);
+				-o-filter: blur(5px) brightness(50%);
+				-ms-filter: blur(5px) brightness(50%);
+				filter: blur(5px) brightness(50%);
+			}
+        </style>
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section>
+					<img height="200" src="img/nodejs-new-pantone-white.svg">
+                    <h1>STREAMS</h1>
+                    <p>Les flux de données</p>
+                    <br />
+                    <i class="fa fa-github" aria-hidden="true"></i>&nbsp&nbsp<a href="https://github.com/techla/mean">https://github.com/techla/mean</a><br/>
+                    <i class="fa fa-pencil" aria-hidden="true"></i>&nbsp&nbsp<a href="mailto:foad.ardalan@outlook.fr">foad.ardalan@outlook.fr</A>
+
+                </section>
+                <section>
+                    <h2>Flux de données</h2>
+                    <section>
+                        <h3>Généralités</h3>
+                        <p class="left">Concept très simple, model de programmation très puissant</p>
+                        <p class="fragment fade-up left">... mais sous exploité</p>
+                        <p class="fragment fade-up left">Suite de données qui évolue dans le temps</p>
+                        <p class="fragment fade-up left">Peut représenter une suite de :</p>
+                        <ul>
+                            <li class="fragment fade-up">données continues (provenant d'un fichier par exemple)</li>
+                            <li class="fragment fade-up">données discrétisées (généré programatiquement par un algorithme). Le terme de séquence est alors plus adapté</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3>Les flux dans node</h3>
+                        <p class="left">Une implémentation basée sur les évenements</p>
+                        <p class="fragment fade-up left">Ce n'est pas de la programmation réactive fonctionnelle</p>
+                        <ul>
+                            <li class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i>highland.js</li>
+                            <li class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i>rx-node</li>
+                        </ul>
+                        <p class="fragment fade-up left">Le module 'stream' de node propose 2 types de générateur de flux :</p>
+                        <ul>
+                            <li class="fragment fade-up">Le Readable Stream qui produit un flux de données déstiné à être lu</li>
+                            <li class="fragment fade-up">Le Writable Stream qui produit un flux de données destiné à être consommé</li>
+                        </ul>
+                    </section>
+                </section>
+                <section>
+                    <h2>Readable Stream</h2>
+                    <section>
+                        <p class="left">Abstraction de la source des données</p>
+                        <p class="fragment fade-up left">Input Stream</p>
+                    </section>
+                    <section>
+                        <h3>Création</h3>
+                        <p class="left">Détermine la façon et le rythme avec lequel les données sont produites</p>
+                        <div class="fragment fade-up">
+                            <span class="fa-stack fa-lg">
+                            <i class="fa fa-terminal fa-stack-1x"></i>
+                            </span>
+                            <pre>
+                                <code data-trim data-noescape>readable._read = function(size) {
+// var data;
+// ...
+// setTimeout(() => { this.push(data) }, 1000)
+// this.push(data)
+}</code>
+                            </pre>
+                            <p class="fragment fade-up left">La methode push de la classe Readable est à l'origine de la levée de evenement 'data' ou 'readable'</p>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Utilisation</h3>
+                        <p class="left">Exploitation du flux qui sort du Readable Stream</p>
+                        <h4 class="fragment fade-up left">Non flowing mode</h4>
+                        <pre class="fragment fade-up">
+                            <code data-trim data-noescape>readable.on('data', (data) => {
+	console.log(data);
+}</code>
+                        </pre>
+                        <h4 class="fragment fade-up left">Flowing mode</h4>
+                        <pre class="fragment fade-up">
+                            <code data-trim data-noescape>readable.on('readable', function() {
+    var data = this.read()
+	console.log(data);
+}</code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Bonnes pratiques</h3>
+                        <p class="left">
+                            <pre>
+                                <code data-trim data-noescape>var stream = require('stream');
+var util = require('util');
+
+var Readable = stream.Readable;
+var MyStream = function(options) {
+    Readable.call(this, options)
+};
+util.inherits(MyStream, Readable);
+
+MyStream.prototype._read = function(size) {
+// ...
+    this.push(42);
+    this.push(null);
+}</code>
+                            </pre>
+                        </p>
+                    </section>
+                    <section>
+                        <h3>Tips</h3>
+                        <p class="left">Lorsque l'on souhaite extraire sous forme de flux, des données issues d'une source externe telle qu'une BDD ou une resource système (fichier, réseau, ...), l'implémentation de la fonction _read n'est pas à notre portée. Celle-ci nous est généralement fournie par les bibliothèques clientes lorsque ces dernières prennent en charge les stream</p>
+                    </section>
+                </section>
+                <section>
+                    <h2>Writable Stream</h2>
+                    <section>
+                        <p class="left">Abstraction de la destinaltion</p>
+                        <p class="fragment fade-up left">Output Stream</p>
+                    </section>
+                    <section>
+                        <h3>Création</h3>
+                        <p class="left">Détermine la façon et le rythme avec lequel les données doivent être consomées</p>
+                        <pre class="fragment fade-up">
+                            <code data-trim data-noescape>writable._write = function(chunk, encoding, done) {
+	// do something with de chunk
+    // asyncWrite(chunk, (err) => { if (!err) done(); };
+    // or
+    // setTimeout(() => { done(); };
+    // done();
+}</code>
+                        </pre>
+                        <p class="fragment fade-up left">La methode done de la classe Writable est à l'origine de la levée de evenement 'drain'</p>
+                    </section>
+                    <section>
+                        <h3>Utilisation</h3>
+                        <pre class="fragment fade-up">
+                            <code data-trim data-noescape>var data = new Buffer('');writable.write(data);
+writable.end();
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Bonnes pratiques</h3>
+                        <p class="left">
+                            <pre>
+                                <code data-trim data-noescape>var stream = require('stream');
+var util = require('util');
+
+var Writable = stream.Writable;
+var MyStream = function(options) {
+    Writable.call(this, options)
+};
+util.inherits(MyStream, Writable);
+
+MyStream.prototype._write = function(chunk, encoding, done) {
+// ...
+    this.done();
+}</code>
+                            </pre>
+                        </p>
+                    </section>
+                </section>
+                <section>
+                    <h2>Le Pipe</h2>
+                    <section>
+                        <p class="left">Permet d'envoyer un flux issu d'un Readable Stream à un Writable Stream</p>
+                        <div class="fragment fade-up left">
+                            <h3>Scénario</h3>
+                            <pre>
+                                <code data-trim data-noescape>readable.on('data', (data) => {
+    writable.write(data)
+});
+
+readable.on('end', () => {
+    writable.end()
+});</code>
+                            </pre>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Mais...</h3>
+                        <h3 class="fragment fade-up">Un control de flux est nécessaire</h3>
+                    </section>
+                    <section>
+                            <pre>
+                                <code data-trim data-noescape>readable.on('data', (data) => {
+    let canWrite = writable.write(data);
+    if (!canWrite) {
+        readable.pause();
+    }
+});
+
+writable.on('drain', () => {
+    readable.resume();
+});
+
+readable.on('end', () => {
+    writable.end();
+});</code>
+                            </pre>
+                    </section>
+                </section>
+                <section>
+                    <h2>Transform Stream</h2>
+                    <section>
+                        <p class="left">Abstraction d'une destination de données</p>
+                        <p class="fragment fade-up left">Détermine la façon dont les données doivent être produite consommées</p>
+                    </section>
+                    <section>
+                        <h3>Création</h3>
+                            <pre>
+                                <code data-trim data-noescape>
+var f = function() {
+	return 'hello';
+}
+                                </code>
+                            </pre>
+                    </section>
+                    <section>
+                        <h3>Utilisation</h3>
+                            <pre>
+                                <code data-trim data-noescape>
+var f = function() {
+	return 'hello';
+}
+                                </code>
+                            </pre>
+                    </section>
+                <section>
+                    <h2>Duplex Stream</h2>
+                    <section>
+                        <p class="left">Abstraction d'une destination de données</p>
+                        <p class="fragment fade-up left">Détermine la façon dont les données doivent être produite consommées</p>
+                    </section>
+                    <section>
+                        <h3>Création</h3>
+                            <pre>
+                                <code data-trim data-noescape>
+var f = function() {
+	return 'hello';
+}
+                                </code>
+                            </pre>
+                    </section>
+                    <section>
+                        <h3>Utilisation</h3>
+                        <pre>
+                            <code data-trim data-noescape>
+var f = function() {
+	return 'hello';
+}</code>
+                        </pre>
+                    </section>
+                </section>
+            </div>
+        </div>
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				],
+				parallaxBackgroundImage: 'img/nodejs-2560x1440.png',
+				parallaxBackgroundSize: '2560px 1440px',
+				parallaxBackgroundHorizontal: 100,
+				parallaxBackgroundVertical: 50
+			});
+		</script>
+    </body>
+</html>

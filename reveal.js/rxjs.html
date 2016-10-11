@@ -1,0 +1,95 @@
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>RxJS</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/rxjs.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+        <link rel="shortcut icon" sizes="32x32" type="image/png" href="favicon/rxjs.png">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+    <body>
+        <img id="logo" src="img/Rx_Logo_S.png" width="60px" height="60px">
+        <div class="reveal">
+            <div class="slides">
+                <section data-background-image="img/reactivex_bg_blur.jpg">
+					<img height="200" src="img/Rx_Logo_S.png">
+                    <h2 style="font-family: 'Signika',Helvetica,sans-serif; color: white">Programmation Réactive Fonctionnelle</h2>
+                    <h4 style="font-family: 'Signika',Helvetica,sans-serif">avec</h4>
+                    <h1 style="font-family: 'Signika',Helvetica,sans-serif">ReactiveX</h1>
+                    <br />
+                    <i class="fa fa-github" aria-hidden="true"></i>&nbsp&nbsp<a href="https://github.com/techla/mean">https://github.com/techla/mean</a>
+                    <br/>
+                    <i class="fa fa-pencil" aria-hidden="true"></i>&nbsp&nbsp<a href="mailto:foad.ardalan@outlook.fr">foad.ardalan@outlook.fr</a>
+                </section>
+                <section>
+                    <h2>Flux de données</h2>
+                    <section>
+                        <h3>Généralités</h3>
+                        <p class="left">Concept très simple, model de programmation très puissant</p>
+                        <p class="fragment fade-up left">... mais sous exploité</p>
+                    </section>
+                </section>
+                <section>
+                    <h2>Le Pipe</h2>
+                    <section>
+                        <p class="left">Permet d'envoyer un flux issu d'un Readable Stream à un Writable Stream</p>
+                        <div class="fragment fade-up left">
+                            <h3>Scénario</h3>
+                            <pre>
+                                <code data-trim data-noescape>readable.on('data', (data) => {
+    writable.write(data)
+});
+
+readable.on('end', () => {
+    writable.end()
+});</code>
+                            </pre>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Mais...</h3>
+                        <h3 class="fragment fade-up">Un control de flux est nécessaire</h3>
+                    </section>
+                </section>
+            </div>
+        </div>
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+                center: false,
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+
+//				parallaxBackgroundImage: 'img/reactivex_bg.jpg',
+//				parallaxBackgroundSize: '2560px 1440px',
+//				parallaxBackgroundHorizontal: 200,
+//				parallaxBackgroundVertical: 50
+			});
+		</script>
+    </body>
+</html>

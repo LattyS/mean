@@ -1,0 +1,303 @@
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Streams NodeJS</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/nodejs.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+        <link rel="shortcut icon" sizes="32x32" type="image/png" href="favicon/nodejs.png">
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+    <body>
+        <img id="logo" src="img/nodejs-icon.svg" width="60px" height="60px">
+        <div class="reveal">
+            <div class="slides">
+                <section data-background-image="img/nodejs-2560x1440-blur.png">
+					<img height="200" src="img/nodejs-new-pantone-white.svg">
+                    <h1 style="color: white;">STREAMS</h1>
+                    <p style="color: white;">Les flux de données</p>
+                    <br />
+                    <i class="fa fa-github" aria-hidden="true"></i>&nbsp&nbsp<a href="https://github.com/techla/mean">https://github.com/techla/mean</a><br/>
+                    <i class="fa fa-pencil" aria-hidden="true"></i>&nbsp&nbsp<a href="mailto:foad.ardalan@outlook.fr">foad.ardalan@outlook.fr</A>
+
+                </section>
+                <section>
+                    <h2>Flux de données</h2>
+                    <section>
+                        <h3>Généralités</h3>
+                        <p class="left">Concept simple, model de programmation très puissant</p>
+                        <p class="fragment fade-up left">... mais sous exploité</p>
+                        <p class="fragment fade-up left"><span class="color">Suite de valeurs liées à un même ensemble qui évoluent dans le temps</span></p>
+                        <p class="fragment fade-up left">Peut représenter une suite de :</p>
+                        <ul>
+                            <li class="fragment fade-up">données continues (provenant d'un fichier par exemple)</li>
+                            <li class="fragment fade-up">données discrétisées (généré programatiquement). Le terme de séquence est alors plus adapté</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3>dans node</h3>
+                        <p class="left">Une implémentation basée sur les évenements (module EventEmitter, du pattern publisher/subscriber)</p>
+                        <p class="fragment fade-up left">Admet des états (possibilité de lui attacher des propriétés) </p>
+                        <p class="fragment fade-up left">Ne se prête pas à la programmation réactive fonctionnelle</p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> highland.js, rx-node, ...</p>
+                        <p class="fragment fade-up left">Le module 'stream' de node définit principalement deux types de flux : les <span class="color">Readable Stream</span> et les <span class="color">Writable Stream</span></p>
+                    </section>
+                </section>
+                <section>
+                    <h2>Readable Stream</h2>
+                    <section>
+                        <p class="left"><span class="color">Flux entrant</span></p>
+                        <p class="fragment fade-up left">Accessible en lecture</p> 
+                    </section>
+                    <section>
+                        <h3>Création 1</h3>
+                        <p class="left"><span class="color">Créer</span> un flux entrant revient à instancier un objet de type Readable et à implementer la methode <span class="color">_read</span> qui en fixe notamment le débit</p>
+                        <p class="fragment fade-up left">_read <span class="color">produit</span> le flux données destiné à être lu</p>
+                        <p class="fragment fade-up left">Lorsqu'ils prennent en charge les flux, les modules qui manipulent des données extraites d'une source externe (base de données ou ressource systèmes - fichier, réseau ...) implémentent la methode _read</p>
+                    </section>
+                    <section>
+                        <h3>Création 2</h3>
+                        <h4>Options utiles</h4>
+                        <p class="left"><span class="color">objectMode</span> : Boolean <i class="fa fa-long-arrow-right" aria-hidden="true"></i> Autorise le flux d'objets javascript</p>
+                        <p class="fragment fade-up left"><span class="color">highWaterMark</span> : Number <i class="fa fa-long-arrow-right" aria-hidden="true"></i> Détermine la taille du Buffer de réception</p>
+                    </section>
+                    <section>
+                        <h3>Création 3</h3>
+                        <pre style="height: 340px; width:100%;">
+                            <code data-trim data-noescape>
+var stream = require('stream');
+var util = require('util');
+var Readable = stream.Readable;
+var MyReadable = function(options) { Readable.call(this, options={}) };
+util.inherits(MyReadable, Readable);
+MyReadable.prototype._read = function(size) {
+// var data; // String/Buffer type
+// this.push(data); // emits the 'data' event. May emits the 'readable' event
+// setTimeout(() => { this.push(data) }, 1000); // async push
+// this.push(null); // emits the 'end' event
+}                                    
+                            </code>
+                        </pre>
+                        <p style="margin-top: 0px;" class="fragment fade-up left">Le flux débute à l'état <span class="color">paused</span>. Ensuite, deux modes de lecture sont possibles : <span class="color">Flowing</span> et <span class="color">Non Flowing</span></p>
+                    </section>
+                    <section>
+                        <h3>Utilisation - Fowing Mode 1</h3>
+                        <p class="left">Lecture <span class="color">asynchrone</span> du Buffer, par ségments successifs, à chaque occurence de l'évènement <span class="color">data</span></p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> Attention à l'encodage des données lues depuis un Buffer</p>
+                    </section>
+
+                    <section>
+                        <h3>Utilisation - Fowing Mode 2</h3>
+                        <pre style="width:100%;">
+                            <code data-trim data-noescape>
+var myReadable = new MyReadable(); // the stream starts in paused mode 
+myReadable.setEncoding('utf8');
+//readable.resume(); // useless until we're interested only on the 'end' event
+// Attaching the data event will automaticly starts the stream on flowing mode
+myReadable.on('data', (data) => { // the event handler calls the _read method
+//  var d = data.toString('utf8'); <= wrong, set the encoding stream wide
+// ...
+}
+myReadable.on('end', () => {
+  console.log('end of the stream')
+}
+                            </code>
+                        </pre>
+                    </section>
+
+                    <section>
+                        <h3>Utilisation - Non Flowing Mode 1 </h3>
+                        <p class="left">Lecture <span class="color">synchrone</span> du Buffer via la methode <span class="color">read</span></p>
+                        <p class="fragment fade-up left">read extrait les données et vide le buffer</p>
+                        <p class="fragment fade-up left">Se mettre à l'écoute de l'évènement <span class="color">readable</span> qui ne se déclanche que l'orsque le buffer sort de l'état vide</p>
+                        <p class="fragment fade-up left">Une fois en non Flowing mode, il est impossible de revenir au mode flowing</p>
+                    </section>
+                    <section>
+                        <h3>Utilisation - Non Flowing Mode 2</h3>
+                        <pre>
+                            <code data-trim data-noescape>
+var myReadable = new MyReadable();
+myReadable.on('readable', function() {
+//    var data = this.read();
+//	...
+}
+var data = myReadable.read(); // empty the buffer
+// next incoming data will raise the 'readable' event 
+
+                            </code>
+                        </pre>
+                    </section>
+                </section>
+                <section>
+                    <h2>Writable Stream</h2>
+                    <section>
+                        <p class="left"><span class="color">Flux sortant</span></p>
+                        <p class="fragment fade-up left">Flux accessible en écriture</p>
+                    </section>
+                    <section>
+                        <h3>Création 1</h3>
+                        <p class="left">Créer un flux sortant revient à instancier un objet de type <span class="color">Writable</span> et à implementer la methode <span class="color">_write</span> qui en fixe notamment le débit</p>
+                        <p class="fragment fade-up left">Recoit un Buffer/String en entrée <i class="fa fa-long-arrow-right" aria-hidden="true"></i> Attention à l'encodage</p>
+                        <p class="fragment fade-up left">Lorsqu'ils prennent en charge les flux, les modules qui manipulent des données extraites d'une source externe (base de données ou ressource systèmes - fichier, réseau ...) implémentent la methode _write</p>
+
+                    </section>
+                    <section>
+                        <h3>Création 2</h3>
+                        <pre>
+                            <code data-trim data-noescape>
+var stream = require('stream');
+var util = require('util');
+
+var Writable = stream.Writable;
+var MyWritable = function(options) {
+    Writable.call(this, options)
+};
+util.inherits(MyWritable, Writable);
+
+MyWritable.prototype._write = function(chunk, encoding, done) {
+    // do something with de chunk
+    // asyncWrite(chunk, (err) => { if (!err) done(); };
+    // or
+    // setTimeout(() => { done(); };
+    // done(); // emit the 'drain' event
+}
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Utilisation</h3>
+                        <p class="left">Une seule methode <span class="color">write</span> à appeler</p>
+                        <pre class="fragment fade-up left">
+                            <code data-trim data-noescape>
+var myWritable = new MyWritable();
+var data = 'xyz';
+myWritable.write(data);
+//myWritable.write('abc');
+//...
+myWritable.end();
+                            </code>
+                        </pre>
+                    </section>
+                </section>
+                <section>
+                    <h2>L'opérateur Pipe</h2>
+                    <section>
+                        <p class="left">Opérateur qui permet d'envoyer un flux issu d'un Readable Stream à un Writable Stream</p>
+                        <div class="fragment fade-up left">
+                            <h3>Scénario</h3>
+                            <pre>
+                                <code data-trim data-noescape>
+myReadable.on('data', (data) => {
+    myWritable.write(data)
+});
+myReadable.on('end', () => {
+    myWritable.end()
+});
+                                </code>
+                            </pre>
+                        </div>
+                    </section>
+                    <section>
+                        <h3>Mais...</h3>
+                        <h3 class="fragment fade-up">Un control de flux est nécessaire</h3>
+                        <h4 class="fragment fade-up">appelé aussi <span class="color">back pressure</span></h4>
+                            <pre class="fragment fade-up">
+                                <code data-trim data-noescape>
+readable.on('data', (data) => {
+    let canWrite = writable.write(data);
+    if (!canWrite) {
+        readable.pause();
+    }
+});
+writable.on('drain', () => {
+    readable.resume();
+});
+readable.on('end', () => {
+    writable.end();
+});
+                                </code>
+                            </pre>
+                    </section>
+                </section>
+                <section>
+                    <h2>Les variantes</h2>
+                    <section>
+                        <p class="left">Le module 'stream' de node met à disposition deux autres types de flux obtenus à partir des types élémentaires Readable et Writable</p>
+                        <p class="fragment fade-up left">Le <span class="color">Duplex Stream</span> et le <span class="color">Transform Stream<span></p>
+                    </section>
+                    <section>
+                        <h3>Duplex Stream</h3>
+                        <p class="left">Flux à la fois Readable et Writable. A noter que les flux Writable et Readable qu'il renferme sont indépendants l'un vis à vis de l'autre</p>
+                        <p class="fragment fade-up left">Le code nécessisaire à la mise en place d'un mécanisme d'héritage multiple dans un contexte d'héritage prototypal est fastidieux. Dès lors, le module 'stream' nous simple les choses en mettant à disposition le constructeur Duplex</p>
+                    </section>
+                    <section>
+                        <h3>Transform Stream</h3>
+                        <p class="left">Comme le Duplex Stream, ce flux se compose d'un Readable et d'un Writable</p>
+                        <p class="fragment fade-up left">Mais contrairement à lui, ces deux flux sont indisociables</p>
+                        <p class="fragment fade-up left">Le Transform Stream est <span class="color">un Writable Stream qui génère un Readable Stream</span></p>
+                        <p class="fragment fade-up left">Donne tout son interet à l'opérateur Pipe</p>
+                    </section>
+                    <section>
+                        <pre>
+                            <code data-trim data-noescape>
+var stream = require('stream');
+var util = require('util');
+var Transform = stream.Transform;
+var MyTransform = function(options) {
+    Transform.call(this, options)
+};
+util.inherits(MyTransform, Transform);
+MyTransform.prototype._transform = function(chunk, encoding, done) {
+    this.push(chunk.toString().toUpperCase());
+    done();
+};
+var myTransform = new MyTransform();
+myTransform.setEncoding('utf8');
+myTransform.on('data', function(data) {
+    console.log(data);
+});
+myTransform.write('abc');
+process.stdin.pipe(myTransform).pipe(process.stdout);
+                            </code>
+                        </pre>
+                    </section>
+                </section>
+            </div>
+        </div>
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+                center: false,
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+//				parallaxBackgroundImage: 'img/nodejs-2560x1440.png',
+//				parallaxBackgroundSize: '2560px 1440px',
+//				parallaxBackgroundHorizontal: 200,
+//				parallaxBackgroundVertical: 50
+			});
+		</script>
+    </body>
+</html>

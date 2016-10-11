@@ -1,0 +1,354 @@
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>ES6 Asynchrone</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/es6.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+        <link rel="shortcut icon" sizes="32x32" type="image/png" href="favicon/js.jpg">
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+    <body>
+        <img id="logo" src="img/js.jpg" width="60px" height="60px">
+        <div class="reveal">
+            <div class="slides">
+                <section data-background-image="img/ecma-blur.jpg" data-background-size="cover" data-background-position="top left">
+					<img height="200" src="img/js.jpg">
+                    <h3>Le Javascript</h3>
+                    <h4>et l'execution</h4>
+                    <h1>Asynchone</h1>
+                    <br/>
+                    <i class="fa fa-github" aria-hidden="true"></i>&nbsp&nbsp<a href="https://github.com/techla/mean">https://github.com/techla/mean</a><br/>
+                    <i class="fa fa-pencil" aria-hidden="true"></i>&nbsp&nbsp<a href="mailto:foad.ardalan@outlook.fr">foad.ardalan@outlook.fr</A>
+
+                </section>
+                <section>
+                    <h2>JAVASCRIPT</h2>
+                    <section>
+                        <h3>Rapide tour d'horizon</h3>
+                        <p class="left">Un runtime embarquée partout ... ou presque</p>
+                        <p class="fragment fade-up left">Une popularité grandissante</p>
+                        <p class="fragment fade-up left">Une communauté de développeurs active</p>
+                        <p class="fragment fade-up left">Langage qui se réinvente</p>
+                    </section>
+                    <section>
+                        <h3>Ses atouts</h3>
+                        <p class="left">Le javascript est un langage orienté objet à héritage prototypal ...<span class="fragment fade-up"> mais surtout</span></p>
+                        <ul>
+                            <li class="fragment fade-up">Il est <span class="color">fonctionnel</span></li>
+                            <li class="fragment fade-up">Il permet au code de s'executer de manière <span class="color">asynchrone</span></li>
+                        </ul>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> Ce qui en fait un langage plus adapté à la programmation fonctionnelle qu'à la POO classique, encore qu'il prévoit d'évoluer sur ce terrain là</p>
+                    </section>
+                </section>
+                <section>
+                    <h2>ASYNCHRONE</h2>
+                    <section>
+                        <p class="left">Un pattern ...</p>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+// Declaration
+const asyncOperation = (args, callback) => {
+//    async operation here
+//    ...
+//    PUSHES values to the callback
+      callback(values);
+};
+
+// Call
+asyncOperation('http://api.rest.com/test', (x) => console.log(x));
+//asyncOperation('http://api.rest.com/test', console.log.bind(console));
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <p class="left">(... ou plus concretement ...)</p>
+                         <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+const printData = (data) =>
+    console.log("I'm an asynchrone call and Here is your data" + data);
+const getData = (url, callback) => {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", url, false ); // true for synchronous request
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            callback(null, xmlHttp.responseText);
+        }
+    }
+    xmlHttp.onError = (e) => { callback(e); }
+    xmlHttp.send( null );
+}
+getData('http://jsonplaceholder.typicode.com/posts/1', printData);
+console.log("I'm a fast synchone call executed on the same tick of the EvLoop");
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <p class="left">... qui peut vite devenir ingérable</p>
+                         <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+getData(url, function (data) {
+    writeDB(data, function(err, data) {
+        if (!err) logToFile(file, data, function(err, data) {
+            if (err) sendMail(address, data, function(err) {
+                if (!err) push42(function(num) {
+                    console.log(num);
+                })
+            })
+        })
+    })
+});
+                          </code>
+                        </pre>
+
+                    </section>
+                    <section>
+                        <p class="left">... et qui peut poser de sérieux problèmes</p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> Comment s'assurer que la callback passée en paramètre d'une fonction d'orde supérieur importée d'une bibliothèque externe sera appelée convenablement ?</p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> Comment avoir un contrôle de flux séquentiel ?</p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> La perte de contexte lors de l'execution de la callback rend le débuggage compliqué</p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> Perte de lisibilité du code</p>
+                        <p class="fragment fade-up left">...</p>
+                    </section>
+                    <section>
+                        <p class="left">Pour la lisibilité, on peut toujours s'arranger</p>
+                        <pre class="fragment fade-up" style="width:100%;">
+                        <code data-trim data-noescape>
+const 42Pushed = (x) => console.log(x);
+const mailSent = (x) => if (!x) push42(x, 42Pushed);
+const logDone = (x, y) => if (x) sendMail(address, y, mailSent);
+const writeDone = (x, y) => if (!x) logToFile(file, y, logDone);
+const dataReady = (x) => writeDB(x, writeDone);
+
+getData(dataReady);
+                            </code>
+                        </pre>
+                    </section>
+                </section>
+                <section>
+                    <h2>Les promesses</h2>
+                    <section>
+                        <p class="left">Moyen imaginé pour résoudre les problèmes posés</p>
+                        <p class="fragment fade-up left">Initialement implémentées en javascript et proposées par différentes bibliothèques, les promesses ont rapidement été intégrées aux spécifications du langage</p>
+                        <p class="fragment fade-up left">L'idée est simple: on modélise ce phénomène d'execution asynchrone pour mieux le controller en introduisant un objet qui le matérialise</p>
+                        <p class="fragment fade-up left">Une promesse représente une opération asynchrone en soi. C'est un objet javascript <span class="color">à qui la fonction qui déclanche l'opération asynchrone délègue la résponsabilité de l'appel à la callback</span></p>
+                    </section>
+                    <section>
+                        <p class="left">Avec l'apparition des promesses ...</p>
+                        <p class="fragment fade-up left">... les fonctions à l'origine d'une opération asynchrone ne sont plus des fonctions d'orde supérieur mais devront retourner une promesse en échange</p>
+                        <p class="fragment fade-up left">... la déclaration de la fonction de callback se fait auprès de la promesse, en la passant en paramètre de sa methode <span class="color">then</span></p>
+                        <p class="fragment fade-up left">... la responsabilité de l'execution de la callback revient donc à l'appelant.</p>
+                        <p class="fragment fade-up left"><i class="fa fa-long-arrow-right" aria-hidden="true"></i> <span class="color">Inversion de l'IOC</span></p>
+                    </section>
+                    <section>
+                        <p class="left">De part leur construction, les promesses garantissent l'unicité d'execution</p>
+                        <p class="fragment fade-up left">Une promesse établit principalement un lien de confience entre la fonction à l'origine de l'opération asynchrone et l'appelant</p>
+                        <p class="fragment fade-up left">Une promesse résolue ne peut être rejouée</p>
+	                    <p class="fragment fade-up left">Enfin, dans la methode <span class="color">then</span> ne se limite pas qu'à invoquer la callback en temps voulue. En retournant une nouvelle promesse, elle permet la <span class="color">composabilité</span>.
+                        <p class="fragment fade-up left">Il devient alors possible de chainer les promesse les unes aux autres, et ainsi d'ordonner les traitements dans le temps.</p>
+                    </section> 
+                    <section>
+                        <h3>Création</h3>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+const getData = (url, callback) => {
+//    async operation here
+//    ...
+//    PUSHES values to the callback
+      callback(values);
+};
+// becomes
+const getData = (url) =>
+    return new Promise(function(resolv, reject) {
+//    async operation here
+//    ...
+//    PUSHES values to the promise once solved
+        resolve(data);
+    });
+};
+
+getData('http://api.rest.com/test', console.log.bind(console) })
+// becomes
+getData('http://api.rest.com/test').then(console.log.bind(console) });
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Création</h3>
+                        <p class="left">L'exemple de la section précédente devient</p>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+var printData = (data) =>
+    console.log("I'm an asynchrone call and Here is your data" + data);
+var getData = (url) => {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", url, false );
+    var promise = new Promise((resolve, reject) => {
+        xmlHttp.onreadystatechange = () => { 
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                resolve(xmlHttp.responseText);
+            }
+        }
+        xmlHttp.onError = reject;
+    });
+    xmlHttp.send( null );
+    return promise;
+}
+getData('http://jsonplaceholder.typicode.com/posts/1').then(printData);
+console.log("I'm a fast synchone call executed on the same tick of the EvLoop");
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Utilisation</h3>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+getData(url)
+    .then(writeDB)
+    .then(logToFile)
+    .then(sendMail)
+    .then(() => 42;)
+    .then(console.log.bind(console))
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Les erreurs</h3>
+                        <p class="left">Lorsque la promesse rencontre une erreur durant sa résolution, elle se met dans l'etat rejected, et au lieu d'invoquer la callback du then, elle invoque la callback transmise à la première methode <span class="color">catch</span> rencontrée dans la chaine.</p>
+                        <p class="fragment fade-up left">Tout comme then, catch est une fonction d'orde supérieur qui retourne une promesse :</p>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+getData(url)
+    .then(writeDB)
+    .catch(writeError)
+    .then(logToFile)
+    .then(() => 42;)
+    .then(console.log.bind(console))
+    .catch(errorAfterWrite)
+                            </code>
+                        </pre>
+                    </section>
+                </section>
+                <section>
+                    <h2>Les générateurs</h2>
+                    <section>
+                        <p class="left">Fonctions particulières capables de retourner plusieurs valeurs et de se mettre en pause après chaque valeur retournée.</p>
+                        <p class="left fragment fade-up">Le mot clef yield est inspiré de la programmation concurrente coopérative</p>
+                        <p class="left fragment fade-up">Permet de créer des itérateurs et mettre en place un système de messaging</p>
+                    </section>
+                    <section>
+                        <h3>Pattern synchrone</h3>
+                        <p class="left">Avec ce type d'implémentation, un générateur peut se résumer à une factorie passive de valeurs</p>
+                        <p class="fragment fade-up left"><span class="color">Les données en sont extraites depuis l'extérieur <i class="fa fa-long-arrow-right" aria-hidden="true"></i> PULL</span></p>
+                    </section>
+                    <section>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <h3>Pattern asynchrone</h3>
+                        <p class="fragment fade-up left"><span class="color">synchrous looking async code</span></p>
+                        <p class="left">Contrairement à l'implémentation synchrone, on se soucie plus de l'interieur</p>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+                            </code>
+                        </pre>
+                        <p class="fragment fade-up left">avec les générateurs purs, le probleme de l'IOC demeure</p>
+                    </section>
+                    <section>
+                        <h3>Combiner les générateurs et les promesses</h3>
+                        <p>Co</p>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+function co(generator) {
+  const iterator = generator();
+  (function iterate(iteration) {
+    if (!iteration.done) {
+      iteration.value.then((resolve) => {
+        iterate(iterator.next(resolve));
+      })
+    } else {
+      process.exit();
+    }
+  })(iterator.next());
+}
+                            </code>
+                        </pre>
+                    </section>
+                    <section>
+                        <pre style="width:100%;">
+                            <code data-trim data-noescape>
+                            </code>
+                        </pre>
+                        <p class="fragment fade-up left">Rend caduque la chaine de promesses</p>
+                    </section>
+                    <section>
+                        <h3>Généralisation ES7: await async</h3>
+                        <pre class="fragment fade-up" style="width:100%;">
+                            <code data-trim data-noescape>
+                            </code>
+                        </pre>
+                    </section>
+                </section>                    
+            </div>
+        </div>
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+                center: false,
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+//				parallaxBackgroundImage: 'img/nodejs-2560x1440.png',
+//				parallaxBackgroundSize: '2560px 1440px',
+//				parallaxBackgroundHorizontal: 200,
+//				parallaxBackgroundVertical: 50
+			});
+		</script>
+    </body>
+</html>
+
+
+
+
+introduction au observables
+
+((variable = closure variable)))
+
+rien pour faire face à l'evenementiel'
+
+
+une variable est un tableau valeur dans le temps
+
+hot vs cold observable
+
+
+Salut Romain,
+
+    tu as fait un solide et très sérieux travail sur le workflow qui contient tous les éléments du déploiement continu et qui planifie les objectifs pour le 1er semestre. De mon côté, je vais commencer la migration de l'outband vers Angular2. Je suis en contact avec Harold que je devrais voir la semaine prochaine pour discuter technique et modélisation. D'après les échanges que j'ai eu l'occasion d'avoir avec chacun, je dirais que les conceptions et techniques sont assez variées. Informatique oblige. Je devrai donc fixer un cadre suffisamment large pour que chacun puisse développer suivant ses orientations, mais suffisamment précis pour garantir la consistance du projet, et la mise en place du workflow va m'aider dans cette tâche. Le moins que l'on puisse dire, c'est que tout le monde est motivé pour attaquer la rentrée avec entrain et énergie.
+Je t'envoie au passage une photo de moi que tu pourras intégrer aux slides de la présentation !
+Sur ce, je te souhaite de passer un bon weekend.

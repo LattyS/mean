@@ -1,0 +1,74 @@
+/**
+ * Black theme for reveal.js. This is the opposite of the 'white' theme.
+ *
+ * By Hakim El Hattab, http://hakim.se
+ */
+
+
+// Default mixins and settings -----------------
+@import "../template/mixins";
+@import "../template/settings";
+// ---------------------------------------------
+
+
+// Include theme-specific fonts
+@import url(../../lib/font/source-sans-pro/source-sans-pro.css);
+
+// Override theme settings (see ../template/settings.scss)
+
+$backgroundColor: #fff;
+
+$mainColor: #333;
+$headingColor: #333;
+$mainFont: 'Source Sans Pro',Open Sans,Roboto,'San Francisco',Helvetica,Arial,sans-serif;
+$headingFont: 'Source Sans Pro',Open Sans,Roboto,'San Francisco',Helvetica,Arial,sans-serif;
+$headingTextShadow: none;
+$heading1TextShadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0,0,0,.1), 0 0 5px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.3), 0 3px 5px rgba(0,0,0,.2), 0 5px 10px rgba(0,0,0,.25), 0 20px 20px rgba(0,0,0,.15);
+
+$headingTextTransform: none;
+
+$linkColor: $mainColor;
+$selectionBackgroundColor: $linkColor;
+$linkColorHover: lighten( $linkColor, 15% );
+
+section.has-light-background {
+	&, h1, h2, h3, h4, h5, h6 {
+		color: #333;
+	}
+}
+
+// Background generator
+//@mixin bodyBackground() {
+//	@include radial-gradient( rgba(247,242,211,1), rgba(255,255,255,1) );
+//}
+
+// Theme template ------------------------------
+@import "../template/theme";
+// ---------------------------------------------
+.reveal section img {
+	margin: 15px 0px;
+	background: none;
+	border: 0px;
+	box-shadow: none;
+}
+.left { text-align: left !important;}
+.color {
+	color: #F8DC3D;
+	text-shadow: 1px -1px 0 #333;
+
+}
+#logo {
+	position: fixed;
+	bottom: 30px;
+	left: 30px;
+}
+.reveal h2 {
+	color: #333;
+	background-color: #F8DC3D;
+}
+.reveal pre {
+	box-shadow: none;
+}
+.reveal pre code {
+	max-height: 450px;
+}
