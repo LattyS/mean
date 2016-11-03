@@ -39,7 +39,7 @@ router
             if (!user) { user = new User() };
             user.username = req.body.username;
             user.password = req.body.password;
-            return user.save();
+            user.save(user => res.send(user));
         })
         .then(function (user) {
               console.log(user);
